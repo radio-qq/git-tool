@@ -43,6 +43,6 @@ async function main(configPath) {
 
 const REPOSITORIES_CONFIG_JSON = "./repositories.json";
 
-const REPOSITORIES_SAVE_PATH = "./";
+const REPOSITORIES_SAVE_PATH = "./repo";
 
 main(REPOSITORIES_CONFIG_JSON);
