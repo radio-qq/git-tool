@@ -1,0 +1,1 @@
+curl --header "PRIVATE-TOKEN: xx" "xx/api/v4/groups/329/projects?per_page=100&page=1"  | jq 'map({description, http_url_to_repo})' > repositories.json
