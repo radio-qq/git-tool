@@ -5,10 +5,17 @@ function readRepositoryConfig(filePath) {
   return new Promise((resolve, reject) => {
     fs.readFile(filePath, (error, data) => {
       if (error) {
-        reject({ isSuccess: false, message: `Failed read JSON file ${filePath}: ${error.message}` });
+        reject({
+          isSuccess: false,
+          message: `Failed read JSON file ${filePath}: ${error.message}`,
+        });
         return;
       }
-      resolve({ isSuccess: true, message: `Successfully read JSON file ${filePath}`, data: JSON.parse(data) });
+      resolve({
+        isSuccess: true,
+        message: `Successfully read JSON file ${filePath}`,
+        data: JSON.parse(data),
+      });
     });
   });
 }
@@ -18,7 +25,10 @@ function cloneRepository(repo) {
     const repoUrl = repo.http_url_to_repo;
     exec(`git clone ${repoUrl}`, { cwd: REPOSITORIES_SAVE_PATH }, (error) => {
       if (error) {
-        reject({ isSuccess: false, message: `Failed to clone ${repoUrl}: ${error.message}` });
+        reject({
+          isSuccess: false,
+          message: `Failed to clone ${repoUrl}: ${error.message}`,
+        });
         return;
       }
       resolve({ isSuccess: true, message: `Successfully cloned ${repoUrl}` });
@@ -27,7 +37,9 @@ function cloneRepository(repo) {
 }
 
 function printResult(result) {
-  result.isSuccess ? console.log(result.message) : console.error(result.message);
+  result.isSuccess
+    ? console.log(result.message)
+    : console.error(result.message);
 }
 
 async function main(configPath) {
