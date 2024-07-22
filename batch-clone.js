@@ -1,60 +1,84 @@
 const fs = require("fs");
+const path = require("path");
+const readline = require("readline");
+
 const { exec } = require("child_process");
 
-function readRepositoryConfig(filePath) {
-  return new Promise((resolve, reject) => {
-    fs.readFile(filePath, (error, data) => {
-      if (error) {
-        reject({
-          isSuccess: false,
-          message: `Failed read JSON file ${filePath}: ${error.message}`,
-        });
-        return;
-      }
-      resolve({
-        isSuccess: true,
-        message: `Successfully read JSON file ${filePath}`,
-        data: JSON.parse(data),
-      });
-    });
-  });
-}
+// 我怕覆盖，而我的json又git ignore，所以之后我应该在这里加上时间戳 防覆盖
+// const REPOSITORIES_CONFIG_JSON = "./json/performance-backend";
 
-function cloneRepository(repo) {
-  return new Promise((resolve, reject) => {
-    const repoUrl = repo.http_url_to_repo;
-    exec(`git clone ${repoUrl}`, { cwd: REPOSITORIES_SAVE_PATH }, (error) => {
-      if (error) {
-        reject({
-          isSuccess: false,
-          message: `Failed to clone ${repoUrl}: ${error.message}`,
-        });
-        return;
-      }
-      resolve({ isSuccess: true, message: `Successfully cloned ${repoUrl}` });
-    });
-  });
-}
+main();
 
-function printResult(result) {
-  result.isSuccess
-    ? console.log(result.message)
-    : console.error(result.message);
-}
+async function main() {
+  const { configPath } = await askForNewRecord();
 
-async function main(configPath) {
-  try {
-    const { data: repositories } = await readRepositoryConfig(configPath);
-    const clonePromises = repositories.map(cloneRepository);
-    const results = await Promise.all(clonePromises);
-    results.forEach(printResult);
-  } catch (error) {
-    console.error(error);
+  const stat = fs.lstatSync(configPath);
+  if (stat.isDirectory()) {
+    readJSONDir(configPath);
+    return;
   }
+  readJSONFile(configPath);
 }
 
-const REPOSITORIES_CONFIG_JSON = "./repositories.json";
+async function askForNewRecord() {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
 
-const REPOSITORIES_SAVE_PATH = "./repo";
+  const newRecord = {};
 
-main(REPOSITORIES_CONFIG_JSON);
+  newRecord.configPath = await askQuestion(rl, "Please repo config json: ");
+
+  rl.close();
+
+  return newRecord;
+}
+
+function askQuestion(rl, prompt) {
+  return new Promise((resolve) => {
+    rl.question(prompt, (answer) => {
+      resolve(String.raw`${answer}`);
+    });
+  });
+}
+
+function readJSONFile(filePath) {
+  const { target_path, repositories } = readRepositoryConfig(filePath);
+  repositories.forEach((repo) => cloneRepository(repo, target_path));
+}
+
+function readJSONDir(dirPath) {
+  const fileNames = fs.readdirSync(dirPath);
+  const filePaths = fileNames.map((name) => path.join(dirPath, name));
+  filePaths.forEach(readJSONFile);
+}
+
+function readRepositoryConfig(filePath) {
+  let result = {};
+  try {
+    result = JSON.parse(fs.readFileSync(filePath, { encoding: "utf8" }));
+    console.log(`Successfully read JSON file ${filePath}`);
+  } catch (error) {
+    console.log(error.toString());
+  }
+  return result;
+}
+
+function cloneRepository(repo, target_path) {
+  // 这是之前的旧仓库地址
+  // const repoUrl = repo.http_url_to_repo;
+  // 现在要用新的
+  const repoUrl = repo.http_url_to_repo || repo.ssh_url_to_repo;
+  if (!fs.existsSync(target_path)) {
+    fs.mkdirSync(target_path);
+  }
+
+  exec(`git clone ${repoUrl}`, { cwd: target_path }, (error) => {
+    if (error) {
+      console.log(`Failed to clone ${repoUrl}: ${error.message}`);
+      return;
+    }
+    console.log(`Successfully cloned ${repoUrl}`);
+  });
+}
