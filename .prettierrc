@@ -1,21 +1,11 @@
 {
-    // 每行最大长度为80字符
-    "printWidth": 80,
-    // 缩进使用2个空格
-    "tabWidth": 2,
-    // 句末不加分号
-    "semi": false,
-    // 自动添加尾随逗号
-    "trailingComma": "all",
-    // 单引号代替双引号
-    "singleQuote": true,
-    // 对象字面量的大括号内部需要空格
-    "bracketSpacing": true,
-    // 箭头函数只有一个参数时省略括号
-    "arrowParens": "avoid",
-    // 不插入prettier的标识头注释
-    "insertPragma": false,
-    // 行结束符使用换行符lf
-    "endOfLine": "lf"
-  }
-  
+  "printWidth": 80,
+  "tabWidth": 2,
+  "semi": false,
+  "trailingComma": "all",
+  "singleQuote": true,
+  "bracketSpacing": true,
+  "arrowParens": "avoid",
+  "insertPragma": false,
+  "endOfLine": "lf"
+}
